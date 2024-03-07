@@ -1,10 +1,10 @@
-use crate::{game::{Game, GameBuilder}, game_io::GameIO, util};
+use crate::{game_io::GameIO, util};
 
 pub struct ConsoleIO {
 }
 
 impl GameIO for ConsoleIO {
-    fn update_playfields(&mut self, player_datas: Vec<crate::playerdata::PlayerData>) {
+    fn update_playfields(&mut self, player_datas: &Vec<crate::playerdata::PlayerData>) {
         for player_data in player_datas {
             println!("{}", player_data.name);
             print!(" ");
@@ -38,7 +38,7 @@ impl GameIO for ConsoleIO {
         }
     }
 
-    fn ask_playfield_position(&mut self, msg: &str, playfield: Vec<[(bool, i8); 3]>) -> (usize, usize) {
+    fn ask_playfield_position(&mut self, msg: &str, playfield: &Vec<[(bool, i8); 3]>) -> (usize, usize) {
         println!("{}", msg);
         let mut input_line = String::new();
         std::io::stdin().read_line(&mut input_line).expect("Failed to read from stdin");
@@ -71,5 +71,13 @@ impl GameIO for ConsoleIO {
             (Some(x), Some(y)) => (x, y),
             _ => self.ask_playfield_position("", playfield)
         }
+    }
+    
+    fn start_turn(&mut self, player: &str) {
+        println!("It's your turn {}.", player);
+    }
+    
+    fn draw_card(&mut self, card: i8) {
+        println!("You drew an {}", card);
     }
 }
