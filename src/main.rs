@@ -9,7 +9,7 @@ fn main() {
     println!("Welcome to SkyJo!");
 
     let mut builder = GameBuilder::new();
-    builder.with_player("Paul".to_owned()).unwrap().with_player("Joey".to_owned()).unwrap();
+    builder.with_player("Paul".to_owned()).unwrap();
 
     let mut game = builder.build();
 

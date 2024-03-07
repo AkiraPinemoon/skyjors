@@ -61,3 +61,16 @@ pub fn alphabet_to_num(c: char) -> usize {
         _ => 26,
     }
 }
+
+pub fn ask_yes_or_no() -> bool {
+    let mut input_line = String::new();
+    std::io::stdin().read_line(&mut input_line).expect("Failed to read from stdin");
+    match input_line.split_whitespace().take(1).last().unwrap() {
+        "yes" | "y" => true,
+        "no" | "n" => false,
+        _ => {
+            println!("Invalid input. Type yes/y/no/n");
+            ask_yes_or_no()
+        },
+    }
+}

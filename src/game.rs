@@ -1,4 +1,4 @@
-use crate::{playerdata::PlayerData, stack::Stack, util::{self, alphabet_to_num}};
+use crate::{playerdata::PlayerData, stack::Stack, util::{self, alphabet_to_num, ask_yes_or_no}};
 use std::fmt;
 
 pub struct Game {
@@ -6,6 +6,7 @@ pub struct Game {
     stack: Stack,
     current_player: usize,
     phase: GamePhase,
+    last_played_card: Option<i8>,
 }
 
 impl Game {
@@ -29,7 +30,43 @@ impl Game {
                 }
             },
             GamePhase::Play => {
+                self.print_current_playfield();
+                let chosen_card = match self.last_played_card {
+                    None => {
+                        let card = self.stack.draw().unwrap();
+                        println!("You drew an {}", card);
+                        card
+                    },
+                    Some(last) => {
+                        println!("You can either take the {} that was played last or draw a random card, do you want to draw a card?", last);
+                        let card = match ask_yes_or_no() {
+                            true => {
+                                let card = self.stack.draw().unwrap();
+                                println!("You drew an {}", card);
+                                card
+                            },
+                            false => {
+                                let card = last;
+                                self.last_played_card = None;
+                                card
+                            },
+                        };
+                        card
+                    },
+                };
 
+                println!("Do you want to play this card (or throw it away)?");
+                match ask_yes_or_no() {
+                    true => {
+                        println!("Sure. Pick what card to replace.");
+                        self.replace_card(chosen_card);
+                    },
+                    false => {
+                        println!("Ok. Pick a card to reveal.");
+                        self.last_played_card = Some(chosen_card);
+                        self.reveal_card();
+                    },
+                };
             },
             GamePhase::Ended => {
 
@@ -81,6 +118,34 @@ impl Game {
 
         self.print_current_playfield();
     }
+
+    fn replace_card(&mut self, card: i8) {
+        let mut input_line = String::new();
+        std::io::stdin().read_line(&mut input_line).expect("Failed to read from stdin");
+    
+        let y = match input_line.trim().chars().next() {
+            Some(c) => alphabet_to_num(c),
+            None => {
+                println!("Invalid input. Please enter a character and a 1-digit integer.");
+                return;
+            }
+        };
+    
+        let x = match input_line.trim()[1..].parse::<u8>() {
+            Ok(digit) if digit < 10 => digit as usize,
+            _ => {
+                println!("Invalid input. Please enter a valid 1-digit integer.");
+                return;
+            }
+        };
+        
+        self.last_played_card = Some(self.player_data[self.current_player].playfield[x][y].1);
+
+        self.player_data[self.current_player].playfield[x][y].0 = true;
+        self.player_data[self.current_player].playfield[x][y].1 = card;
+
+        self.print_current_playfield();
+    }
 }
 
 #[derive(PartialEq)]
@@ -95,6 +160,7 @@ pub struct GameBuilder {
     stack: Stack,
     current_player: usize,
     phase: GamePhase,
+    last_played_card: Option<i8>,
 }
 
 impl GameBuilder {
@@ -104,6 +170,7 @@ impl GameBuilder {
             stack: Stack::new(),
             current_player: 0,
             phase: GamePhase::InitialReveal,
+            last_played_card: None,
         }
     }
 
@@ -121,6 +188,7 @@ impl GameBuilder {
             stack: self.stack,
             current_player: self.current_player,
             phase: self.phase,
+            last_played_card: self.last_played_card,
         }
     }
 }
