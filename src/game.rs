@@ -1,4 +1,4 @@
-use crate::{playerdata::PlayerData, stack::Stack, util::{self, alphabet_to_num, ask_matrix_option, ask_yes_or_no}};
+use crate::{game_io::GameIO, playerdata::PlayerData, stack::Stack, util::{self, ask_matrix_option, ask_yes_or_no}};
 use std::fmt;
 
 pub struct Game {
@@ -7,6 +7,7 @@ pub struct Game {
     current_player: usize,
     phase: GamePhase,
     last_played_card: Option<i8>,
+    io: Box<dyn GameIO>,
 }
 
 impl Game {
@@ -148,13 +149,14 @@ impl GameBuilder {
         Ok(self)
     }
 
-    pub fn build(self) -> Game {
+    pub fn build(self, io: Box<dyn GameIO>) -> Game {
         Game {
             player_data: self.player_data,
             stack: self.stack,
             current_player: self.current_player,
             phase: self.phase,
             last_played_card: self.last_played_card,
+            io,
         }
     }
 }
