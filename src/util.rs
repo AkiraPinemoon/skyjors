@@ -74,3 +74,31 @@ pub fn ask_yes_or_no() -> bool {
         },
     }
 }
+
+pub fn ask_matrix_option(min_x: usize, max_x: usize, min_y: usize, max_y: usize) -> (usize, usize) {
+    let mut input_line = String::new();
+    std::io::stdin().read_line(&mut input_line).expect("Failed to read from stdin");
+
+    let y = match input_line.trim().chars().next() {
+        Some(c) => {
+            let y = alphabet_to_num(c);
+            if y >= min_y && y <= max_y {
+                y
+            } else {
+                panic!("aaaaaaaaa too big/small");
+            }
+        },
+        None => {
+            panic!("aaaaaaaaa no letter found");
+        }
+    };
+
+    let x = match input_line.trim()[1..].parse::<usize>() {
+        Ok(digit) if digit <= max_x && digit >= min_x => digit as usize,
+        _ => {
+            panic!("aaaaaaaaa no letter found or too small/big");
+        }
+    };
+
+    (x, y)
+}

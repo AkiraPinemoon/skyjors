@@ -1,4 +1,4 @@
-use crate::{playerdata::PlayerData, stack::Stack, util::{self, alphabet_to_num, ask_yes_or_no}};
+use crate::{playerdata::PlayerData, stack::Stack, util::{self, alphabet_to_num, ask_matrix_option, ask_yes_or_no}};
 use std::fmt;
 
 pub struct Game {
@@ -38,7 +38,7 @@ impl Game {
                         card
                     },
                     Some(last) => {
-                        println!("You can either take the {} that was played last or draw a random card, do you want to draw a card?", last);
+                        println!("You can either take the {} that was thrown away last or draw a random card, do you want to draw a card?", last);
                         let card = match ask_yes_or_no() {
                             true => {
                                 let card = self.stack.draw().unwrap();
@@ -95,24 +95,7 @@ impl Game {
     }
 
     fn reveal_card(&mut self) {
-        let mut input_line = String::new();
-        std::io::stdin().read_line(&mut input_line).expect("Failed to read from stdin");
-    
-        let y = match input_line.trim().chars().next() {
-            Some(c) => alphabet_to_num(c),
-            None => {
-                println!("Invalid input. Please enter a character and a 1-digit integer.");
-                return;
-            }
-        };
-    
-        let x = match input_line.trim()[1..].parse::<u8>() {
-            Ok(digit) if digit < 10 => digit as usize,
-            _ => {
-                println!("Invalid input. Please enter a valid 1-digit integer.");
-                return;
-            }
-        };
+        let (x, y) = ask_matrix_option(0, self.player_data[self.current_player].playfield.len(), 0, 2);
     
         self.player_data[self.current_player].playfield[x][y].0 = true;
 
@@ -120,24 +103,7 @@ impl Game {
     }
 
     fn replace_card(&mut self, card: i8) {
-        let mut input_line = String::new();
-        std::io::stdin().read_line(&mut input_line).expect("Failed to read from stdin");
-    
-        let y = match input_line.trim().chars().next() {
-            Some(c) => alphabet_to_num(c),
-            None => {
-                println!("Invalid input. Please enter a character and a 1-digit integer.");
-                return;
-            }
-        };
-    
-        let x = match input_line.trim()[1..].parse::<u8>() {
-            Ok(digit) if digit < 10 => digit as usize,
-            _ => {
-                println!("Invalid input. Please enter a valid 1-digit integer.");
-                return;
-            }
-        };
+        let (x, y) = ask_matrix_option(0, self.player_data[self.current_player].playfield.len(), 0, 2);
         
         self.last_played_card = Some(self.player_data[self.current_player].playfield[x][y].1);
 
