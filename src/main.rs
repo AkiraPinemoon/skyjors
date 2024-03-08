@@ -17,9 +17,5 @@ fn main() {
     let io = ConsoleIO::new();
     let mut game = builder.build(Box::new(io));
 
-    game.start();
-
-    while !game.is_done() {
-        game.turn();
-    }
+    game.run();
 }

@@ -48,6 +48,7 @@ impl Game {
                             false => {
                                 let card = last;
                                 self.last_played_card = None;
+                                self.io.take_card(card);
                                 card
                             },
                         };
@@ -64,14 +65,59 @@ impl Game {
                         self.reveal_card("Ok. Pick a card to reveal.");
                     },
                 };
-            },
-            GamePhase::Ended => {
 
+                self.remove_done_columns();
+                if !self.has_unrevealed_cards(&self.playerdata[self.current_player].playfield) {
+                    self.phase = GamePhase::Ended;
+                    self.reveal_all_cards();
+                    self.io.end_game(&self.playerdata);
+                }
             },
+            GamePhase::Ended => {},
         }
 
         self.current_player += 1;
         self.current_player %= self.playerdata.len();
+    }
+
+    pub fn run(&mut self) {
+        self.start();
+        while !self.is_done() {
+            self.turn();
+        }
+    }
+
+    fn remove_done_columns(&mut self) {
+        for p in self.playerdata.iter_mut() {
+            p.playfield = p.playfield.iter().copied().filter(|column| {
+                match column {
+                    [(true, x), (true, y), (true, z)] => !(x == y && y == z),
+                    _ => true
+                }
+            }).collect();
+        }
+
+        self.io.update_playfields(&self.playerdata);
+    }
+
+    fn has_unrevealed_cards(&self, playfield: &Vec<[(bool, i8); 3]>) -> bool {
+        let mut res = false;
+        playfield.iter().for_each(|column| {
+            column.iter().for_each(|card| {
+                if !card.0 { res = true; }
+            })
+        });
+        res
+    }
+
+    fn reveal_all_cards(&mut self) {
+        self.playerdata.iter_mut().for_each(|player| {
+            player.playfield.iter_mut().for_each(|column| {
+                column.iter_mut().for_each(|card| {
+                    card.0 = true;
+                })
+            });
+        })
     }
 
     fn reveal_card(&mut self, msg: &str) {

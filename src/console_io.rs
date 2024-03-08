@@ -12,13 +12,17 @@ impl ConsoleIO {
         print!("\x1B[{};{}H", y, x);
     }
     fn clear_line(&self, y: usize) {
-        print!("\x1B[{};2K", y);
+        print!("\x1B[{};0H\x1B[2K", y);
     }
 }
 
 impl GameIO for ConsoleIO {
     fn update_playfields(&mut self, player_datas: &Vec<crate::playerdata::PlayerData>) {
-        self.set_cusor_pos(0, 0);
+        self.clear_line(1);
+        self.clear_line(2);
+        self.clear_line(3);
+        self.clear_line(4);
+        self.set_cusor_pos(1, 1);
 
         for (player_id, player_data) in player_datas.iter().enumerate() {
             self.set_cusor_pos(player_id * 17 + 1, 1);
@@ -120,5 +124,39 @@ impl GameIO for ConsoleIO {
         self.set_cusor_pos(1, 6);
 
         println!("You drew an {:2}", card);
+    }
+
+    fn take_card(&mut self, card: i8) {
+        self.clear_line(6);
+        self.set_cusor_pos(1, 6);
+
+        println!("You took the {:2}", card);
+    }
+    
+    fn end_game(&mut self, playerdata: &Vec<crate::playerdata::PlayerData>) {
+        self.update_playfields(playerdata);
+        self.clear_line(6);
+        self.clear_line(7);
+        self.clear_line(8);
+        self.clear_line(9);
+
+        self.set_cusor_pos(1, 7);
+
+        println!("Game ended!");
+
+        let mut scores = Vec::new();
+        playerdata.iter().for_each(|player| {
+            let mut score = 0;
+            player.playfield.iter().for_each(|column| {
+                column.iter().for_each(|card| {
+                    score += card.1;
+                })
+            });
+            scores.push((player.name.clone(), score));
+        });
+
+        scores.iter().for_each(|(playername, score)| {
+            println!("{} scored {}", playername, score);
+        });
     }
 }
