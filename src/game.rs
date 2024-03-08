@@ -22,22 +22,24 @@ impl Game {
     pub fn turn(&mut self) {
         match self.phase {
             GamePhase::InitialReveal => {
-                self.io.start_turn(&self.playerdata[self.current_player].name);
+                self.io
+                    .start_turn(&self.playerdata[self.current_player].name);
                 self.reveal_card("Choose your first card to reveal (e.g., A3)");
                 self.reveal_card("Choose your second card to reveal");
 
                 if self.current_player == self.playerdata.len() - 1 {
                     self.phase = GamePhase::Play;
                 }
-            },
+            }
             GamePhase::Play => {
-                self.io.start_turn(&self.playerdata[self.current_player].name);
+                self.io
+                    .start_turn(&self.playerdata[self.current_player].name);
                 let chosen_card = match self.last_played_card {
                     None => {
                         let card = self.stack.draw().unwrap();
                         self.io.draw_card(card);
                         card
-                    },
+                    }
                     Some(last) => {
                         let card = match self.io.ask_yes_or_no(&format!("You can either take the {} that was thrown away last or draw a random card, do you want to draw a card?", last)) {
                             true => {
@@ -53,17 +55,20 @@ impl Game {
                             },
                         };
                         card
-                    },
+                    }
                 };
 
-                match self.io.ask_yes_or_no("Do you want to play this card (or throw it away)?") {
+                match self
+                    .io
+                    .ask_yes_or_no("Do you want to play this card (or throw it away)?")
+                {
                     true => {
                         self.replace_card(chosen_card, "Sure. Pick what card to replace.");
-                    },
+                    }
                     false => {
                         self.last_played_card = Some(chosen_card);
                         self.reveal_card("Ok. Pick a card to reveal.");
-                    },
+                    }
                 };
 
                 self.remove_done_columns();
@@ -72,8 +77,8 @@ impl Game {
                     self.reveal_all_cards();
                     self.io.end_game(&self.playerdata);
                 }
-            },
-            GamePhase::Ended => {},
+            }
+            GamePhase::Ended => {}
         }
 
         self.current_player += 1;
@@ -89,12 +94,15 @@ impl Game {
 
     fn remove_done_columns(&mut self) {
         for p in self.playerdata.iter_mut() {
-            p.playfield = p.playfield.iter().copied().filter(|column| {
-                match column {
+            p.playfield = p
+                .playfield
+                .iter()
+                .copied()
+                .filter(|column| match column {
                     [(true, x), (true, y), (true, z)] => !(x == y && y == z),
-                    _ => true
-                }
-            }).collect();
+                    _ => true,
+                })
+                .collect();
         }
 
         self.io.update_playfields(&self.playerdata);
@@ -104,7 +112,9 @@ impl Game {
         let mut res = false;
         playfield.iter().for_each(|column| {
             column.iter().for_each(|card| {
-                if !card.0 { res = true; }
+                if !card.0 {
+                    res = true;
+                }
             })
         });
         res
@@ -121,9 +131,11 @@ impl Game {
     }
 
     fn reveal_card(&mut self, msg: &str) {
-        let (x, y) = self.io.ask_playfield_position(msg, &self.playerdata[self.current_player].playfield, |playfield, (x, y)| {
-            !playfield[x][y].0
-        });
+        let (x, y) = self.io.ask_playfield_position(
+            msg,
+            &self.playerdata[self.current_player].playfield,
+            |playfield, (x, y)| !playfield[x][y].0,
+        );
 
         self.playerdata[self.current_player].playfield[x][y].0 = true;
 
@@ -131,8 +143,12 @@ impl Game {
     }
 
     fn replace_card(&mut self, card: i8, msg: &str) {
-        let (x, y) = self.io.ask_playfield_position(msg, &self.playerdata[self.current_player].playfield, |_, _| { true });
-        
+        let (x, y) = self.io.ask_playfield_position(
+            msg,
+            &self.playerdata[self.current_player].playfield,
+            |_, _| true,
+        );
+
         self.last_played_card = Some(self.playerdata[self.current_player].playfield[x][y].1);
 
         self.playerdata[self.current_player].playfield[x][y].0 = true;
@@ -171,7 +187,7 @@ impl GameBuilder {
     pub fn with_player(&mut self, name: String) -> Result<&mut Self, String> {
         self.playerdata.push(PlayerData {
             name,
-            playfield: self.stack.draw_playfield()?
+            playfield: self.stack.draw_playfield()?,
         });
         Ok(self)
     }
@@ -190,6 +206,9 @@ impl GameBuilder {
 
 impl fmt::Debug for Game {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Game").field("player_data", &self.playerdata).field("stack", &self.stack).finish()
+        f.debug_struct("Game")
+            .field("player_data", &self.playerdata)
+            .field("stack", &self.stack)
+            .finish()
     }
 }

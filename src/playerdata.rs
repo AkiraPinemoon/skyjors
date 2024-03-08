@@ -7,6 +7,9 @@ pub struct PlayerData {
 
 impl fmt::Debug for PlayerData {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("PlayerData").field("name", &self.name).field("playfield", &self.playfield).finish()
+        f.debug_struct("PlayerData")
+            .field("name", &self.name)
+            .field("playfield", &self.playfield)
+            .finish()
     }
 }

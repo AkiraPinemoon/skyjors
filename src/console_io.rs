@@ -1,7 +1,5 @@
 use crate::{game_io::GameIO, util};
-
-pub struct ConsoleIO {
-}
+pub struct ConsoleIO {}
 
 impl ConsoleIO {
     pub fn new() -> Self {
@@ -38,8 +36,11 @@ impl GameIO for ConsoleIO {
                 self.set_cusor_pos(player_id * 17 + 1, 3 + row);
                 print!("{}", util::num_to_alphabet(row));
                 for card in player_data.playfield.iter() {
-                    if card[row].0 { print!("{:3}", card[row].1); }
-                    else { print!("  X"); }
+                    if card[row].0 {
+                        print!("{:3}", card[row].1);
+                    } else {
+                        print!("  X");
+                    }
                 }
                 println!("")
             }
@@ -54,18 +55,25 @@ impl GameIO for ConsoleIO {
 
         println!("{}", msg);
         let mut input_line = String::new();
-        std::io::stdin().read_line(&mut input_line).expect("Failed to read from stdin");
+        std::io::stdin()
+            .read_line(&mut input_line)
+            .expect("Failed to read from stdin");
         match input_line.split_whitespace().take(1).last().unwrap() {
             "yes" | "y" => true,
             "no" | "n" => false,
             _ => {
                 println!("Invalid input. Type yes/y/no/n");
                 self.ask_yes_or_no("")
-            },
+            }
         }
     }
 
-    fn ask_playfield_position(&mut self, msg: &str, playfield: &Vec<[(bool, i8); 3]>, validator: fn(playfield: &Vec<[(bool, i8); 3]>, pos: (usize, usize)) -> bool) -> (usize, usize) {
+    fn ask_playfield_position(
+        &mut self,
+        msg: &str,
+        playfield: &Vec<[(bool, i8); 3]>,
+        validator: fn(playfield: &Vec<[(bool, i8); 3]>, pos: (usize, usize)) -> bool,
+    ) -> (usize, usize) {
         self.clear_line(7);
         self.clear_line(8);
         self.clear_line(9);
@@ -73,7 +81,13 @@ impl GameIO for ConsoleIO {
 
         println!("{}", msg);
         let mut input_line = String::new();
-        std::io::stdin().read_line(&mut input_line).expect("Failed to read from stdin");
+        std::io::stdin()
+            .read_line(&mut input_line)
+            .expect("Failed to read from stdin");
+
+        if input_line.len() < 2 {
+            return self.ask_playfield_position("", playfield, validator);
+        }
 
         let y = match input_line.trim().chars().next() {
             Some(c) => {
@@ -84,7 +98,7 @@ impl GameIO for ConsoleIO {
                     println!("Invalid input. try a lower y coordinate.");
                     None
                 }
-            },
+            }
             None => {
                 println!("Invalid input. no letter found.");
                 None
@@ -92,7 +106,7 @@ impl GameIO for ConsoleIO {
         };
 
         let x = match input_line.trim()[1..].parse::<usize>() {
-            Ok(digit) if digit <= playfield.len() => Some(digit),
+            Ok(digit) if digit < playfield.len() => Some(digit),
             _ => {
                 println!("Invalid input. try a lower x coordinate.");
                 None
@@ -101,14 +115,16 @@ impl GameIO for ConsoleIO {
 
         match (x, y) {
             (Some(x), Some(y)) => {
-                if validator(playfield, (x, y)) { return (x, y); }
+                if validator(playfield, (x, y)) {
+                    return (x, y);
+                }
                 println!("Invalid input. try another coordinate.");
                 self.ask_playfield_position("", playfield, validator)
-            },
-            _ => self.ask_playfield_position("", playfield, validator)
+            }
+            _ => self.ask_playfield_position("", playfield, validator),
         }
     }
-    
+
     fn start_turn(&mut self, player: &str) {
         self.clear_line(6);
         self.clear_line(7);
@@ -118,7 +134,7 @@ impl GameIO for ConsoleIO {
         self.set_cusor_pos(1, 6);
         println!("It's your turn {}.", player);
     }
-    
+
     fn draw_card(&mut self, card: i8) {
         self.clear_line(6);
         self.set_cusor_pos(1, 6);
@@ -132,7 +148,7 @@ impl GameIO for ConsoleIO {
 
         println!("You took the {:2}", card);
     }
-    
+
     fn end_game(&mut self, playerdata: &Vec<crate::playerdata::PlayerData>) {
         self.update_playfields(playerdata);
         self.clear_line(6);

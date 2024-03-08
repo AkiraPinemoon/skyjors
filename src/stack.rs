@@ -1,5 +1,5 @@
-use std::fmt;
 use rand::seq::SliceRandom;
+use std::fmt;
 
 pub struct Stack {
     cards: Vec<i8>,
@@ -23,10 +23,8 @@ impl Stack {
         cards.append(&mut vec![10; 10]);
         cards.append(&mut vec![11; 10]);
         cards.append(&mut vec![12; 10]);
-        
-        let mut new = Self {
-            cards,
-        };
+
+        let mut new = Self { cards };
         new.shuffle();
         new
     }
@@ -43,12 +41,30 @@ impl Stack {
     }
 
     pub fn draw_playfield(&mut self) -> Result<Vec<[(bool, i8); 3]>, String> {
-        if self.cards.len() < 12 { return Err("Not enough cards in stack".to_string()) }
+        if self.cards.len() < 12 {
+            return Err("Not enough cards in stack".to_string());
+        }
         Ok(vec![
-            [(false, self.cards.pop().unwrap()), (false, self.cards.pop().unwrap()), (false, self.cards.pop().unwrap())],
-            [(false, self.cards.pop().unwrap()), (false, self.cards.pop().unwrap()), (false, self.cards.pop().unwrap())],
-            [(false, self.cards.pop().unwrap()), (false, self.cards.pop().unwrap()), (false, self.cards.pop().unwrap())],
-            [(false, self.cards.pop().unwrap()), (false, self.cards.pop().unwrap()), (false, self.cards.pop().unwrap())],
+            [
+                (false, self.cards.pop().unwrap()),
+                (false, self.cards.pop().unwrap()),
+                (false, self.cards.pop().unwrap()),
+            ],
+            [
+                (false, self.cards.pop().unwrap()),
+                (false, self.cards.pop().unwrap()),
+                (false, self.cards.pop().unwrap()),
+            ],
+            [
+                (false, self.cards.pop().unwrap()),
+                (false, self.cards.pop().unwrap()),
+                (false, self.cards.pop().unwrap()),
+            ],
+            [
+                (false, self.cards.pop().unwrap()),
+                (false, self.cards.pop().unwrap()),
+                (false, self.cards.pop().unwrap()),
+            ],
         ])
     }
 }
