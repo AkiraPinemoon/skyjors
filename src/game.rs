@@ -11,9 +11,14 @@ pub struct Game {
 }
 
 impl Game {
+    pub fn start(&mut self) {
+        self.io.update_playfields(&self.playerdata);
+    }
+
     pub fn is_done(&self) -> bool {
         self.phase == GamePhase::Ended
     }
+
     pub fn turn(&mut self) {
         match self.phase {
             GamePhase::InitialReveal => {
@@ -70,15 +75,17 @@ impl Game {
     }
 
     fn reveal_card(&mut self, msg: &str) {
-        let (x, y) = self.io.ask_playfield_position(msg, &self.playerdata[self.current_player].playfield);
-    
+        let (x, y) = self.io.ask_playfield_position(msg, &self.playerdata[self.current_player].playfield, |playfield, (x, y)| {
+            !playfield[x][y].0
+        });
+
         self.playerdata[self.current_player].playfield[x][y].0 = true;
 
         self.io.update_playfields(&self.playerdata);
     }
 
     fn replace_card(&mut self, card: i8, msg: &str) {
-        let (x, y) = self.io.ask_playfield_position(msg, &self.playerdata[self.current_player].playfield);
+        let (x, y) = self.io.ask_playfield_position(msg, &self.playerdata[self.current_player].playfield, |_, _| { true });
         
         self.last_played_card = Some(self.playerdata[self.current_player].playfield[x][y].1);
 

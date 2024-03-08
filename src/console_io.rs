@@ -3,10 +3,27 @@ use crate::{game_io::GameIO, util};
 pub struct ConsoleIO {
 }
 
+impl ConsoleIO {
+    pub fn new() -> Self {
+        println!("\x1B[2J");
+        Self {}
+    }
+    fn set_cusor_pos(&self, x: usize, y: usize) {
+        print!("\x1B[{};{}H", y, x);
+    }
+    fn clear_line(&self, y: usize) {
+        print!("\x1B[{};2K", y);
+    }
+}
+
 impl GameIO for ConsoleIO {
     fn update_playfields(&mut self, player_datas: &Vec<crate::playerdata::PlayerData>) {
-        for player_data in player_datas {
+        self.set_cusor_pos(0, 0);
+
+        for (player_id, player_data) in player_datas.iter().enumerate() {
+            self.set_cusor_pos(player_id * 17 + 1, 1);
             println!("{}", player_data.name);
+            self.set_cusor_pos(player_id * 17 + 1, 2);
             print!(" ");
             for x in 0..player_data.playfield.len() {
                 print!("{:3}", x);
@@ -14,6 +31,7 @@ impl GameIO for ConsoleIO {
             println!("");
 
             for row in 0..3 {
+                self.set_cusor_pos(player_id * 17 + 1, 3 + row);
                 print!("{}", util::num_to_alphabet(row));
                 for card in player_data.playfield.iter() {
                     if card[row].0 { print!("{:3}", card[row].1); }
@@ -25,6 +43,11 @@ impl GameIO for ConsoleIO {
     }
 
     fn ask_yes_or_no(&mut self, msg: &str) -> bool {
+        self.clear_line(7);
+        self.clear_line(8);
+        self.clear_line(9);
+        self.set_cusor_pos(1, 7);
+
         println!("{}", msg);
         let mut input_line = String::new();
         std::io::stdin().read_line(&mut input_line).expect("Failed to read from stdin");
@@ -38,7 +61,12 @@ impl GameIO for ConsoleIO {
         }
     }
 
-    fn ask_playfield_position(&mut self, msg: &str, playfield: &Vec<[(bool, i8); 3]>) -> (usize, usize) {
+    fn ask_playfield_position(&mut self, msg: &str, playfield: &Vec<[(bool, i8); 3]>, validator: fn(playfield: &Vec<[(bool, i8); 3]>, pos: (usize, usize)) -> bool) -> (usize, usize) {
+        self.clear_line(7);
+        self.clear_line(8);
+        self.clear_line(9);
+        self.set_cusor_pos(1, 7);
+
         println!("{}", msg);
         let mut input_line = String::new();
         std::io::stdin().read_line(&mut input_line).expect("Failed to read from stdin");
@@ -68,16 +96,29 @@ impl GameIO for ConsoleIO {
         };
 
         match (x, y) {
-            (Some(x), Some(y)) => (x, y),
-            _ => self.ask_playfield_position("", playfield)
+            (Some(x), Some(y)) => {
+                if validator(playfield, (x, y)) { return (x, y); }
+                println!("Invalid input. try another coordinate.");
+                self.ask_playfield_position("", playfield, validator)
+            },
+            _ => self.ask_playfield_position("", playfield, validator)
         }
     }
     
     fn start_turn(&mut self, player: &str) {
+        self.clear_line(6);
+        self.clear_line(7);
+        self.clear_line(8);
+        self.clear_line(9);
+
+        self.set_cusor_pos(1, 6);
         println!("It's your turn {}.", player);
     }
     
     fn draw_card(&mut self, card: i8) {
-        println!("You drew an {}", card);
+        self.clear_line(6);
+        self.set_cusor_pos(1, 6);
+
+        println!("You drew an {:2}", card);
     }
 }

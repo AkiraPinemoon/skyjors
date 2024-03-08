@@ -12,12 +12,12 @@ fn main() {
 
     let mut builder = GameBuilder::new();
 
-    builder.with_player("Paul".to_owned()).unwrap().with_player("Lisa".to_owned()).unwrap();
+    builder.with_player("Paul".to_owned()).unwrap().with_player("Joey".to_owned()).unwrap();
     
-    let io = ConsoleIO {};
+    let io = ConsoleIO::new();
     let mut game = builder.build(Box::new(io));
 
-    println!("{:?}", game);
+    game.start();
 
     while !game.is_done() {
         game.turn();
