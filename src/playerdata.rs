@@ -1,5 +1,6 @@
 use std::fmt;
 
+#[derive(Clone)]
 pub struct PlayerData {
     pub name: String,
     pub playfield: Vec<[(bool, i8); 3]>,

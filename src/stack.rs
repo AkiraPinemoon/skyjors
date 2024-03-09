@@ -1,6 +1,7 @@
 use rand::seq::SliceRandom;
 use std::fmt;
 
+#[derive(Clone)]
 pub struct Stack {
     cards: Vec<i8>,
 }

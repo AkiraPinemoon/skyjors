@@ -158,13 +158,14 @@ impl Game {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub enum GamePhase {
     InitialReveal,
     Play,
     Ended,
 }
 
+#[derive(Clone)]
 pub struct GameBuilder {
     playerdata: Vec<PlayerData>,
     stack: Stack,
