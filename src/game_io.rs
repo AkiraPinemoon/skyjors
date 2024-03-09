@@ -1,6 +1,6 @@
 use crate::playerdata::PlayerData;
 
-pub trait GameIO {
+pub trait GameIO : Send + Sync {
     fn start_turn(&mut self, player: &str);
     fn update_playfields(&mut self, playerdata: &Vec<PlayerData>);
     fn ask_yes_or_no(&mut self, msg: &str) -> bool;
