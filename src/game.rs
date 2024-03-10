@@ -98,9 +98,13 @@ impl Game {
                 .playfield
                 .iter()
                 .copied()
-                .filter(|column| match column {
-                    [(true, x), (true, y), (true, z)] => !(x == y && y == z),
-                    _ => true,
+                .filter(|column| {
+                    let keep = match column {
+                        [(true, x), (true, y), (true, z)] => !(x == y && y == z),
+                        _ => true,
+                    };
+                    if !keep { self.last_played_card = None; }
+                    keep
                 })
                 .collect();
         }
