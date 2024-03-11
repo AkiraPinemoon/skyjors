@@ -1,4 +1,5 @@
 use crate::{game_io::GameIO, util};
+use async_trait::async_trait;
 pub struct ConsoleIO {}
 
 impl ConsoleIO {
@@ -14,8 +15,9 @@ impl ConsoleIO {
     }
 }
 
+#[async_trait]
 impl GameIO for ConsoleIO {
-    fn update_playfields(&mut self, player_datas: &Vec<crate::playerdata::PlayerData>) {
+    async fn update_playfields(&mut self, player_datas: &Vec<crate::playerdata::PlayerData>) {
         self.clear_line(1);
         self.clear_line(2);
         self.clear_line(3);
@@ -47,7 +49,7 @@ impl GameIO for ConsoleIO {
         }
     }
 
-    fn ask_yes_or_no(&mut self, msg: &str) -> bool {
+    async fn ask_yes_or_no(&mut self, msg: &str) -> bool {
         self.clear_line(7);
         self.clear_line(8);
         self.clear_line(9);
@@ -63,16 +65,16 @@ impl GameIO for ConsoleIO {
             "no" | "n" => false,
             _ => {
                 println!("Invalid input. Type yes/y/no/n");
-                self.ask_yes_or_no("")
+                self.ask_yes_or_no("").await
             }
         }
     }
 
-    fn ask_playfield_position(
+    async fn ask_playfield_position(
         &mut self,
         msg: &str,
-        playfield: &Vec<[(bool, i8); 3]>,
-        validator: fn(playfield: &Vec<[(bool, i8); 3]>, pos: (usize, usize)) -> bool,
+        playfield: Vec<[(bool, i8); 3]>,
+        validator: fn(playfield: Vec<[(bool, i8); 3]>, pos: (usize, usize)) -> bool,
     ) -> (usize, usize) {
         self.clear_line(7);
         self.clear_line(8);
@@ -86,7 +88,7 @@ impl GameIO for ConsoleIO {
             .expect("Failed to read from stdin");
 
         if input_line.len() < 2 {
-            return self.ask_playfield_position("", playfield, validator);
+            return self.ask_playfield_position("", playfield, validator.clone()).await;
         }
 
         let y = match input_line.trim().chars().next() {
@@ -115,17 +117,17 @@ impl GameIO for ConsoleIO {
 
         match (x, y) {
             (Some(x), Some(y)) => {
-                if validator(playfield, (x, y)) {
+                if validator(playfield.clone(), (x, y)) {
                     return (x, y);
                 }
                 println!("Invalid input. try another coordinate.");
-                self.ask_playfield_position("", playfield, validator)
+                self.ask_playfield_position("", playfield, validator).await
             }
-            _ => self.ask_playfield_position("", playfield, validator),
+            _ => self.ask_playfield_position("", playfield, validator).await,
         }
     }
 
-    fn start_turn(&mut self, player: &str) {
+    async fn start_turn(&mut self, player: &str) {
         self.clear_line(6);
         self.clear_line(7);
         self.clear_line(8);
@@ -135,21 +137,21 @@ impl GameIO for ConsoleIO {
         println!("It's your turn {}.", player);
     }
 
-    fn draw_card(&mut self, card: i8) {
+    async fn draw_card(&mut self, card: i8) {
         self.clear_line(6);
         self.set_cusor_pos(1, 6);
 
         println!("You drew an {:2}", card);
     }
 
-    fn take_card(&mut self, card: i8) {
+    async fn take_card(&mut self, card: i8) {
         self.clear_line(6);
         self.set_cusor_pos(1, 6);
 
         println!("You took the {:2}", card);
     }
 
-    fn end_game(&mut self, playerdata: &Vec<crate::playerdata::PlayerData>) {
+    async fn end_game(&mut self, playerdata: &Vec<crate::playerdata::PlayerData>) {
         self.update_playfields(playerdata);
         self.clear_line(6);
         self.clear_line(7);
