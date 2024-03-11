@@ -24,8 +24,8 @@ impl Game {
             GamePhase::InitialReveal => {
                 self.io
                     .start_turn(&self.playerdata[self.current_player].name).await;
-                self.reveal_card("Choose your first card to reveal (e.g., A3)");
-                self.reveal_card("Choose your second card to reveal");
+                self.reveal_card("Choose your first card to reveal (e.g., A3)").await;
+                self.reveal_card("Choose your second card to reveal").await;
 
                 if self.current_player == self.playerdata.len() - 1 {
                     self.phase = GamePhase::Play;
@@ -63,15 +63,15 @@ impl Game {
                     .ask_yes_or_no("Do you want to play this card (or throw it away)?").await
                 {
                     true => {
-                        self.replace_card(chosen_card, "Sure. Pick what card to replace.");
+                        self.replace_card(chosen_card, "Sure. Pick what card to replace.").await;
                     }
                     false => {
                         self.last_played_card = Some(chosen_card);
-                        self.reveal_card("Ok. Pick a card to reveal.");
+                        self.reveal_card("Ok. Pick a card to reveal.").await;
                     }
                 };
 
-                self.remove_done_columns();
+                self.remove_done_columns().await;
                 if !self.has_unrevealed_cards(&self.playerdata[self.current_player].playfield) {
                     self.phase = GamePhase::Ended;
                     self.reveal_all_cards();
@@ -85,10 +85,10 @@ impl Game {
         self.current_player %= self.playerdata.len();
     }
 
-    pub fn run(&mut self) {
-        self.start();
+    pub async fn run(&mut self) {
+        self.start().await;
         while !self.is_done() {
-            self.turn();
+            self.turn().await;
         }
     }
 

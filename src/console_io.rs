@@ -152,7 +152,7 @@ impl GameIO for ConsoleIO {
     }
 
     async fn end_game(&mut self, playerdata: &Vec<crate::playerdata::PlayerData>) {
-        self.update_playfields(playerdata);
+        self.update_playfields(playerdata).await;
         self.clear_line(6);
         self.clear_line(7);
         self.clear_line(8);
